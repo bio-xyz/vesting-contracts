@@ -5,9 +5,9 @@ import "forge-std/Test.sol";
 import { console } from "forge-std/console.sol";
 import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import { Token } from "../contracts/test/Token.sol";
-import { TokenVestingMerkle } from "../contracts/vesting/TokenVestingMerkle.sol";
-import { TokenVesting } from "../contracts/vesting/TokenVesting.sol";
+import { Token } from "./TestToken.sol";
+import { TokenVestingMerkle } from "../src/TokenVestingMerkle.sol";
+import { TokenVesting } from "../src/TokenVesting.sol";
 
 contract TokenVestingMerkleTest is Test {
     Token internal token;

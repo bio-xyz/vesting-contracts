@@ -5,7 +5,7 @@ pragma solidity 0.8.23;
 import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import { MultiTokenVesting } from "./MultiTokenVesting.sol";
 import { TokenVestingMerklePurchasable } from "../TokenVestingMerklePurchasable.sol";
-import { MerkleProofLib } from "solady/utils/MerkleProofLib.sol";
+import { MerkleProofLib } from "@solady/utils/MerkleProofLib.sol";
 
 /// @title MultiTokenVestingMerklePurchasable - Extension of TokenVestingMerklePurchasable contract to
 /// using merkle tree for vesting schedule creation across several contracts
