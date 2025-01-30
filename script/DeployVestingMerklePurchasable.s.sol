@@ -7,18 +7,36 @@ import {TokenVestingMerklePurchasable} from "../src/TokenVestingMerklePurchasabl
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 contract DeploymentScript is Script {
-    address constant multiSigAddress = 0x0000000000000000000000000000000000000000;
-    address constant tokenAddress = 0x0000000000000000000000000000000000000000;
-    // should be added after deployment
-    address constant vestingAddress = 0x0000000000000000000000000000000000000000; 
+    address public multiSigAddress;
+    address public tokenAddress;
+    address public vestingAddress;
 
-    string constant tokenName = "";
-    string constant tokenSymbol = "";
+    string public tokenName;
+    string public tokenSymbol;
 
-    string constant vestingName = "";
-    string constant vestingSymbol = "";
-    bytes32 constant merkleRoot = 0;
-    uint256 constant vTokenCost = 0;
+    string public vestingName;
+    string public vestingSymbol;
+    bytes32 public merkleRoot;
+    uint256 public vTokenCost;
+
+    uint256 public deployerPrivateKey;
+
+    // Initialize in constructor
+    constructor() {
+        multiSigAddress = vm.envAddress("MULTISIG_ADDRESS");
+        tokenAddress = vm.envAddress("TOKEN_ADDRESS");
+        vestingAddress = vm.envAddress("VESTING_ADDRESS");
+
+        tokenName = vm.envString("TOKEN_NAME");
+        tokenSymbol = vm.envString("TOKEN_SYMBOL");
+
+        vestingName = vm.envString("VESTING_NAME");
+        vestingSymbol = vm.envString("VESTING_SYMBOL");
+        merkleRoot = vm.envBytes32("MERKLE_ROOT");
+        vTokenCost = vm.envUint("VTOKEN_COST");
+
+        deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER_PROD");
+    }
 }
 
 // Contract for deploying the vesting contract
@@ -26,7 +44,6 @@ contract DeployDAOTokenVesting is DeploymentScript {
     error VestingDeploymentFailed();
 
     function run() public {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER_PROD");
         vm.startBroadcast(deployerPrivateKey);
         address deployerAddress = vm.addr(deployerPrivateKey);
 
@@ -67,10 +84,9 @@ contract DeployDAOTokenVesting is DeploymentScript {
 
 // Contract for transferring vesting control to multisig
 contract TransferVestingToDAOMultisig is DeploymentScript {
-      error AdminTransferFailed();
+    error AdminTransferFailed();
 
     function run() public {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_DEPLOYER_PROD");
         vm.startBroadcast(deployerPrivateKey);
         address deployerAddress = vm.addr(deployerPrivateKey);
 
@@ -82,7 +98,9 @@ contract TransferVestingToDAOMultisig is DeploymentScript {
         require(vestingAddress != address(0), "Invalid vesting address");
         require(multiSigAddress != address(0), "Invalid multisig address");
 
-        TokenVestingMerklePurchasable tokenVesting = TokenVestingMerklePurchasable(vestingAddress);
+        TokenVestingMerklePurchasable tokenVesting = TokenVestingMerklePurchasable(
+                vestingAddress
+            );
 
         // Store the initial admin
         address initialAdmin = tokenVesting.owner();
@@ -90,7 +108,7 @@ contract TransferVestingToDAOMultisig is DeploymentScript {
         tokenVesting.beginDefaultAdminTransfer(multiSigAddress);
 
         // Verify the transfer was initiated
-        (address pendingAdmin,) = tokenVesting.pendingDefaultAdmin();
+        (address pendingAdmin, ) = tokenVesting.pendingDefaultAdmin();
         if (pendingAdmin != multiSigAddress) {
             revert AdminTransferFailed();
         }
