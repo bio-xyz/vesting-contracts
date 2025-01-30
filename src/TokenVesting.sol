@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.23;
 
-import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import { AccessControlDefaultAdminRules } from "@openzeppelin/contracts/access/AccessControlDefaultAdminRules.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { Pausable } from "@openzeppelin/contracts/security/Pausable.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {AccessControlDefaultAdminRules} from "@openzeppelin/contracts/access/AccessControlDefaultAdminRules.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 
 /// @title TokenVesting - On-Chain vesting scheme enabled by smart contracts.
 /// The TokenVesting contract can release its token balance gradually like a
@@ -225,7 +225,11 @@ contract TokenVesting is IERC20Metadata, ReentrancyGuard, Pausable, AccessContro
      * @notice Returns the vesting schedule information for a given holder and index.
      * @return the vesting schedule structure information
      */
-    function getVestingScheduleByAddressAndIndex(address holder, uint256 index) external view returns (VestingSchedule memory) {
+    function getVestingScheduleByAddressAndIndex(address holder, uint256 index)
+        external
+        view
+        returns (VestingSchedule memory)
+    {
         return getVestingSchedule(computeVestingScheduleIdForAddressAndIndex(holder, index));
     }
 
@@ -286,13 +290,25 @@ contract TokenVesting is IERC20Metadata, ReentrancyGuard, Pausable, AccessContro
         // _duration must be longer than _cliff
         if (_duration < _cliff) revert DurationShorterThanCliff();
 
-        bytes32 vestingScheduleId = computeVestingScheduleIdForAddressAndIndex(_beneficiary, holdersVestingScheduleCount[_beneficiary]++);
-        vestingSchedules[vestingScheduleId] =
-            VestingSchedule(_start + _cliff, _start, _duration, _slicePeriodSeconds, _amount, 0, Status.INITIALIZED, _beneficiary, _revokable);
+        bytes32 vestingScheduleId =
+            computeVestingScheduleIdForAddressAndIndex(_beneficiary, holdersVestingScheduleCount[_beneficiary]++);
+        vestingSchedules[vestingScheduleId] = VestingSchedule(
+            _start + _cliff,
+            _start,
+            _duration,
+            _slicePeriodSeconds,
+            _amount,
+            0,
+            Status.INITIALIZED,
+            _beneficiary,
+            _revokable
+        );
         vestingSchedulesTotalAmount = vestingSchedulesTotalAmount + _amount;
 
         holdersVestedAmount[_beneficiary] = holdersVestedAmount[_beneficiary] + _amount;
-        emit ScheduleCreated(vestingScheduleId, _beneficiary, _amount, _start, _cliff, _duration, _slicePeriodSeconds, _revokable);
+        emit ScheduleCreated(
+            vestingScheduleId, _beneficiary, _amount, _start, _cliff, _duration, _slicePeriodSeconds, _revokable
+        );
         emit Transfer(address(0), _beneficiary, _amount);
     }
 
@@ -300,7 +316,11 @@ contract TokenVesting is IERC20Metadata, ReentrancyGuard, Pausable, AccessContro
      * @notice Revokes the vesting schedule for given identifier.
      * @param vestingScheduleId the vesting schedule identifier
      */
-    function revoke(bytes32 vestingScheduleId) external onlyRole(DEFAULT_ADMIN_ROLE) onlyIfVestingScheduleNotRevoked(vestingScheduleId) {
+    function revoke(bytes32 vestingScheduleId)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+        onlyIfVestingScheduleNotRevoked(vestingScheduleId)
+    {
         VestingSchedule storage vestingSchedule = vestingSchedules[vestingScheduleId];
         if (!vestingSchedule.revokable) revert NotRevokable();
         if (_computeReleasableAmount(vestingSchedule) > 0) {
@@ -359,7 +379,11 @@ contract TokenVesting is IERC20Metadata, ReentrancyGuard, Pausable, AccessContro
      * @param vestingScheduleId the vesting schedule identifier
      * @param amount the amount to release
      */
-    function release(bytes32 vestingScheduleId, uint256 amount) external nonReentrant onlyIfVestingScheduleNotRevoked(vestingScheduleId) {
+    function release(bytes32 vestingScheduleId, uint256 amount)
+        external
+        nonReentrant
+        onlyIfVestingScheduleNotRevoked(vestingScheduleId)
+    {
         _release(vestingScheduleId, amount);
     }
 
@@ -385,7 +409,12 @@ contract TokenVesting is IERC20Metadata, ReentrancyGuard, Pausable, AccessContro
      * @notice Computes the vested amount of tokens for the given vesting schedule identifier.
      * @return the vested amount
      */
-    function computeReleasableAmount(bytes32 vestingScheduleId) external view onlyIfVestingScheduleNotRevoked(vestingScheduleId) returns (uint256) {
+    function computeReleasableAmount(bytes32 vestingScheduleId)
+        external
+        view
+        onlyIfVestingScheduleNotRevoked(vestingScheduleId)
+        returns (uint256)
+    {
         return _computeReleasableAmount(vestingSchedules[vestingScheduleId]);
     }
 

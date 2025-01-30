@@ -2,13 +2,13 @@
 pragma solidity ^0.8.23;
 
 import "forge-std/Test.sol";
-import { console } from "forge-std/console.sol";
-import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {console} from "forge-std/console.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import { Token } from "../TestToken.sol";
-import { TokenVesting } from "../../src/TokenVesting.sol";
-import { MultiTokenVesting } from "../../src/deprecated/MultiTokenVesting.sol";
-import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+import {Token} from "../TestToken.sol";
+import {TokenVesting} from "../../src/TokenVesting.sol";
+import {MultiTokenVesting} from "../../src/deprecated/MultiTokenVesting.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract MultiTokenVestingTest is Test {
     Token internal token;
@@ -54,7 +54,8 @@ contract MultiTokenVestingTest is Test {
 
     function testMultipleVestingContractsClaim() public {
         vm.startPrank(deployer);
-        tokenVesting_2 = new MultiTokenVesting(IERC20Metadata(token), "Virtual Test Token", "vTT", deployer, address(tokenVesting));
+        tokenVesting_2 =
+            new MultiTokenVesting(IERC20Metadata(token), "Virtual Test Token", "vTT", deployer, address(tokenVesting));
         vm.stopPrank();
 
         uint256 baseTime = block.timestamp;
@@ -154,7 +155,8 @@ contract MultiTokenVestingTest is Test {
 
     function testMultipleVestingBalance() public {
         vm.startPrank(deployer);
-        tokenVesting_2 = new MultiTokenVesting(IERC20Metadata(token), "Virtual Test Token", "vTT", deployer, address(tokenVesting));
+        tokenVesting_2 =
+            new MultiTokenVesting(IERC20Metadata(token), "Virtual Test Token", "vTT", deployer, address(tokenVesting));
         tokenVesting_3 = new TokenVesting(IERC20Metadata(token), "Virtual Test Token", "vTT", deployer);
         vm.stopPrank();
 

@@ -60,23 +60,14 @@ contract DeployDAOTokenVesting is DeploymentScript {
         require(address(token) != address(0), "Invalid token address");
 
         TokenVestingMerklePurchasable tokenVesting = new TokenVestingMerklePurchasable(
-                token,
-                vestingName,
-                vestingSymbol,
-                payable(multiSigAddress),
-                multiSigAddress,
-                vTokenCost,
-                merkleRoot
-            );
+            token, vestingName, vestingSymbol, payable(multiSigAddress), multiSigAddress, vTokenCost, merkleRoot
+        );
 
         if (address(tokenVesting) == address(0)) {
             revert VestingDeploymentFailed();
         }
 
-        console.log(
-            "TokenVesting deployed successfully at: %s",
-            address(tokenVesting)
-        );
+        console.log("TokenVesting deployed successfully at: %s", address(tokenVesting));
 
         vm.stopBroadcast();
     }
@@ -98,9 +89,7 @@ contract TransferVestingToDAOMultisig is DeploymentScript {
         require(vestingAddress != address(0), "Invalid vesting address");
         require(multiSigAddress != address(0), "Invalid multisig address");
 
-        TokenVestingMerklePurchasable tokenVesting = TokenVestingMerklePurchasable(
-                vestingAddress
-            );
+        TokenVestingMerklePurchasable tokenVesting = TokenVestingMerklePurchasable(vestingAddress);
 
         // Store the initial admin
         address initialAdmin = tokenVesting.owner();
@@ -108,7 +97,7 @@ contract TransferVestingToDAOMultisig is DeploymentScript {
         tokenVesting.beginDefaultAdminTransfer(multiSigAddress);
 
         // Verify the transfer was initiated
-        (address pendingAdmin, ) = tokenVesting.pendingDefaultAdmin();
+        (address pendingAdmin,) = tokenVesting.pendingDefaultAdmin();
         if (pendingAdmin != multiSigAddress) {
             revert AdminTransferFailed();
         }

@@ -37,11 +37,9 @@ contract TokenVestingV2MerklePurchasableTest is Test {
     bytes32[] aliceProof = new bytes32[](1);
     bytes32[] johnProof = new bytes32[](3);
     // merkleRoot of alice, bob, bighead
-    bytes32 merkleRoot1 =
-        0xd3c242c647a293473133758815a38c34eaa471e529e85a9698d0954fea73de70;
+    bytes32 merkleRoot1 = 0xd3c242c647a293473133758815a38c34eaa471e529e85a9698d0954fea73de70;
     // merkleRoot of alice, bob, bighead, jane, john
-    bytes32 merkleRoot2 =
-        0xdec85dd4681b9730081b74e7337159b996eae28b57448cec7cea8ec343f0d836;
+    bytes32 merkleRoot2 = 0xdec85dd4681b9730081b74e7337159b996eae28b57448cec7cea8ec343f0d836;
 
     uint256 baseTime = 1622551248;
     uint256 cliff = 0;
@@ -55,33 +53,19 @@ contract TokenVestingV2MerklePurchasableTest is Test {
         emit log_address(john);
 
         // Merkle Proof for alice
-        aliceProof[
-            0
-        ] = 0x94c5970130b08f3c5cb2b0c7d9a7040406a1b07a0fc164353f8ec0a58fb37199;
+        aliceProof[0] = 0x94c5970130b08f3c5cb2b0c7d9a7040406a1b07a0fc164353f8ec0a58fb37199;
 
         // Merkle Proof for john after merkle tree update
-        johnProof[
-            0
-        ] = 0x016b280ba09a8a79cab7dd419cfc9c6c9f400281c831296f49921e466850b8d2;
-        johnProof[
-            1
-        ] = 0xeea2a014c525f58b4e9fce3e86bc73c6d6342780ec646d3ee57409062f8cf398;
-        johnProof[
-            2
-        ] = 0x0073bf0065a74349563adba072d420e370b60d49708a62141b166e5c493f223c;
+        johnProof[0] = 0x016b280ba09a8a79cab7dd419cfc9c6c9f400281c831296f49921e466850b8d2;
+        johnProof[1] = 0xeea2a014c525f58b4e9fce3e86bc73c6d6342780ec646d3ee57409062f8cf398;
+        johnProof[2] = 0x0073bf0065a74349563adba072d420e370b60d49708a62141b166e5c493f223c;
 
         vm.startPrank(deployer);
         token = new Token("Test Token", "TT", 18, tokenSupply);
 
         // Iniate TokenVestingMerkle with the merkle root from the example MerkleTree `samples/merkleTree.json`
         tokenVesting = new TokenVestingMerklePurchasable(
-            IERC20Metadata(token),
-            "Virtual Test Token",
-            "vTT",
-            paymentReceiver,
-            vestingCreator,
-            vTokenCost,
-            merkleRoot1
+            IERC20Metadata(token), "Virtual Test Token", "vTT", paymentReceiver, vestingCreator, vTokenCost, merkleRoot1
         );
 
         tokenVesting2 = new MultiTokenVestingMerklePurchasable(
@@ -123,29 +107,12 @@ contract TokenVestingV2MerklePurchasableTest is Test {
 
         vm.startPrank(alice);
         tokenVesting.claimSchedule{value: purchasePrice}(
-            aliceProof,
-            baseTime,
-            cliff,
-            duration,
-            1,
-            true,
-            claimableAmount
+            aliceProof, baseTime, cliff, duration, 1, true, claimableAmount
         );
         vm.stopPrank();
 
         assertEq(tokenVesting.balanceOf(alice), claimableAmount);
-        assertEq(
-            tokenVesting.scheduleClaimed(
-                alice,
-                baseTime,
-                cliff,
-                duration,
-                1,
-                true,
-                claimableAmount
-            ),
-            true
-        );
+        assertEq(tokenVesting.scheduleClaimed(alice, baseTime, cliff, duration, 1, true, claimableAmount), true);
 
         //check if the paymentReceiver received the payment
         assertEq(paymentReceiver.balance, purchasePrice);
@@ -156,25 +123,11 @@ contract TokenVestingV2MerklePurchasableTest is Test {
 
         vm.startPrank(alice);
         tokenVesting.claimSchedule{value: purchasePrice}(
-            aliceProof,
-            baseTime,
-            cliff,
-            duration,
-            1,
-            true,
-            claimableAmount
+            aliceProof, baseTime, cliff, duration, 1, true, claimableAmount
         );
-        vm.expectRevert(
-            MultiTokenVestingMerklePurchasable.AlreadyClaimed.selector
-        );
+        vm.expectRevert(MultiTokenVestingMerklePurchasable.AlreadyClaimed.selector);
         tokenVesting.claimSchedule{value: purchasePrice}(
-            aliceProof,
-            baseTime,
-            cliff,
-            duration,
-            1,
-            true,
-            claimableAmount
+            aliceProof, baseTime, cliff, duration, 1, true, claimableAmount
         );
         vm.stopPrank();
 
@@ -186,35 +139,15 @@ contract TokenVestingV2MerklePurchasableTest is Test {
         vm.startPrank(alice);
 
         // Pass wrong number of tokens
-        vm.expectRevert(
-            MultiTokenVestingMerklePurchasable.InvalidProof.selector
-        );
-        tokenVesting.claimSchedule{value: purchasePrice}(
-            aliceProof,
-            baseTime,
-            cliff,
-            duration,
-            1,
-            true,
-            30000 ether
-        );
+        vm.expectRevert(MultiTokenVestingMerklePurchasable.InvalidProof.selector);
+        tokenVesting.claimSchedule{value: purchasePrice}(aliceProof, baseTime, cliff, duration, 1, true, 30000 ether);
 
         // Pass invalid proof
-        aliceProof[
-            0
-        ] = 0xca6d546259ec0929fd20fbc9a057c980806abef37935fb5ca5f6a179718f1481;
+        aliceProof[0] = 0xca6d546259ec0929fd20fbc9a057c980806abef37935fb5ca5f6a179718f1481;
 
-        vm.expectRevert(
-            MultiTokenVestingMerklePurchasable.InvalidProof.selector
-        );
+        vm.expectRevert(MultiTokenVestingMerklePurchasable.InvalidProof.selector);
         tokenVesting.claimSchedule{value: purchasePrice}(
-            aliceProof,
-            baseTime,
-            cliff,
-            duration,
-            1,
-            true,
-            claimableAmount
+            aliceProof, baseTime, cliff, duration, 1, true, claimableAmount
         );
         vm.stopPrank();
 
@@ -233,28 +166,11 @@ contract TokenVestingV2MerklePurchasableTest is Test {
         vm.startPrank(alice);
         vm.expectRevert(TokenVesting.InsufficientTokensInContract.selector);
         tokenVesting.claimSchedule{value: purchasePrice}(
-            aliceProof,
-            baseTime,
-            cliff,
-            duration,
-            1,
-            true,
-            claimableAmount
+            aliceProof, baseTime, cliff, duration, 1, true, claimableAmount
         );
         vm.stopPrank();
 
-        assertEq(
-            tokenVesting.scheduleClaimed(
-                alice,
-                baseTime,
-                cliff,
-                duration,
-                1,
-                true,
-                claimableAmount
-            ),
-            false
-        );
+        assertEq(tokenVesting.scheduleClaimed(alice, baseTime, cliff, duration, 1, true, claimableAmount), false);
     }
 
     function testCanUpdateMerkleTree() public {
@@ -264,29 +180,12 @@ contract TokenVestingV2MerklePurchasableTest is Test {
 
         vm.startPrank(alice);
         tokenVesting.claimSchedule{value: purchasePrice}(
-            aliceProof,
-            baseTime,
-            cliff,
-            duration,
-            1,
-            true,
-            claimableAmount
+            aliceProof, baseTime, cliff, duration, 1, true, claimableAmount
         );
         vm.stopPrank();
 
         assertEq(tokenVesting.balanceOf(alice), claimableAmount);
-        assertEq(
-            tokenVesting.scheduleClaimed(
-                alice,
-                baseTime,
-                cliff,
-                duration,
-                1,
-                true,
-                claimableAmount
-            ),
-            true
-        );
+        assertEq(tokenVesting.scheduleClaimed(alice, baseTime, cliff, duration, 1, true, claimableAmount), true);
 
         //Update Merkle Tree
         vm.startPrank(deployer);
@@ -295,30 +194,11 @@ contract TokenVestingV2MerklePurchasableTest is Test {
 
         // Claim with new proof
         vm.startPrank(john);
-        tokenVesting.claimSchedule{value: purchasePrice}(
-            johnProof,
-            baseTime,
-            cliff,
-            duration,
-            1,
-            true,
-            claimableAmount
-        );
+        tokenVesting.claimSchedule{value: purchasePrice}(johnProof, baseTime, cliff, duration, 1, true, claimableAmount);
         vm.stopPrank();
 
         assertEq(tokenVesting.balanceOf(john), claimableAmount);
-        assertEq(
-            tokenVesting.scheduleClaimed(
-                john,
-                baseTime,
-                0,
-                duration,
-                1,
-                true,
-                claimableAmount
-            ),
-            true
-        );
+        assertEq(tokenVesting.scheduleClaimed(john, baseTime, 0, duration, 1, true, claimableAmount), true);
     }
 
     // Payment Testing
@@ -386,53 +266,17 @@ contract TokenVestingV2MerklePurchasableTest is Test {
 
         vm.startPrank(alice);
         tokenVesting.claimSchedule{value: purchasePrice}(
-            aliceProof,
-            baseTime,
-            cliff,
-            duration,
-            1,
-            true,
-            claimableAmount
+            aliceProof, baseTime, cliff, duration, 1, true, claimableAmount
         );
-        vm.expectRevert(
-            MultiTokenVestingMerklePurchasable.AlreadyClaimed.selector
-        );
+        vm.expectRevert(MultiTokenVestingMerklePurchasable.AlreadyClaimed.selector);
         tokenVesting2.claimSchedule{value: purchasePrice}(
-            aliceProof,
-            baseTime,
-            cliff,
-            duration,
-            1,
-            true,
-            claimableAmount
+            aliceProof, baseTime, cliff, duration, 1, true, claimableAmount
         );
         vm.stopPrank();
 
         assertEq(tokenVesting.balanceOf(alice), claimableAmount);
-        assertEq(
-            tokenVesting2.scheduleClaimed(
-                alice,
-                baseTime,
-                cliff,
-                duration,
-                1,
-                true,
-                claimableAmount
-            ),
-            true
-        );
-        assertEq(
-            tokenVesting.scheduleClaimed(
-                alice,
-                baseTime,
-                cliff,
-                duration,
-                1,
-                true,
-                claimableAmount
-            ),
-            true
-        );
+        assertEq(tokenVesting2.scheduleClaimed(alice, baseTime, cliff, duration, 1, true, claimableAmount), true);
+        assertEq(tokenVesting.scheduleClaimed(alice, baseTime, cliff, duration, 1, true, claimableAmount), true);
 
         //check if the paymentReceiver received the payment
         assertEq(paymentReceiver.balance, purchasePrice);

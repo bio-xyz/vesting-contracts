@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.23;
 
-import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import { TokenVesting } from "./TokenVesting.sol";
-import { MerkleProofLib } from "solady/utils/MerkleProofLib.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {TokenVesting} from "./TokenVesting.sol";
+import {MerkleProofLib} from "solady/utils/MerkleProofLib.sol";
 
 /// @title TokenVestingMerkle - This contract has all the functionality of TokenVesting,
 /// but it adds the ability to create a merkle tree of vesting schedules. This makes it
@@ -19,7 +19,13 @@ contract TokenVestingMerkle is TokenVesting {
     /// @dev Event emitted when the merkle root is updated
     event MerkleRootUpdated(bytes32 indexed merkleRoot);
 
-    constructor(IERC20Metadata token_, string memory _name, string memory _symbol, address _vestingCreator, bytes32 _root) TokenVesting(token_, _name, _symbol, _vestingCreator) {
+    constructor(
+        IERC20Metadata token_,
+        string memory _name,
+        string memory _symbol,
+        address _vestingCreator,
+        bytes32 _root
+    ) TokenVesting(token_, _name, _symbol, _vestingCreator) {
         merkleRoot = _root;
     }
 
@@ -45,8 +51,11 @@ contract TokenVestingMerkle is TokenVesting {
         bool _revokable,
         uint256 _amount
     ) public whenNotPaused nonReentrant {
-        bytes32 leaf =
-            keccak256(bytes.concat(keccak256(abi.encode(_msgSender(), _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount))));
+        bytes32 leaf = keccak256(
+            bytes.concat(
+                keccak256(abi.encode(_msgSender(), _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount))
+            )
+        );
 
         if (!MerkleProofLib.verify(_proof, merkleRoot, leaf)) revert InvalidProof();
         if (claimed[leaf]) revert AlreadyClaimed();
@@ -75,8 +84,11 @@ contract TokenVestingMerkle is TokenVesting {
         bool _revokable,
         uint256 _amount
     ) public view returns (bool) {
-        bytes32 leaf =
-            keccak256(bytes.concat(keccak256(abi.encode(_beneficiary, _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount))));
+        bytes32 leaf = keccak256(
+            bytes.concat(
+                keccak256(abi.encode(_beneficiary, _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount))
+            )
+        );
         return claimed[leaf];
     }
 

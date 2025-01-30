@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.23;
 
-import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import { TokenVesting } from "./TokenVesting.sol";
-import { MerkleProofLib } from "@solady/utils/MerkleProofLib.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {TokenVesting} from "./TokenVesting.sol";
+import {MerkleProofLib} from "@solady/utils/MerkleProofLib.sol";
 
 /// @title TokenVestingMerklePurchasable - This contract has all the functionality of TokenVesting,
 /// but it adds the ability to create a merkle tree of vesting schedules. This makes it
@@ -82,14 +82,17 @@ contract TokenVestingMerklePurchasable is TokenVesting {
         uint256 _amount
     ) public payable whenNotPaused nonReentrant {
         // check if vesting schedule has been already claimed
-        bytes32 leaf =
-            keccak256(bytes.concat(keccak256(abi.encode(_msgSender(), _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount))));
+        bytes32 leaf = keccak256(
+            bytes.concat(
+                keccak256(abi.encode(_msgSender(), _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount))
+            )
+        );
         if (!MerkleProofLib.verify(_proof, merkleRoot, leaf)) revert InvalidProof();
         if (claimed[leaf]) revert AlreadyClaimed();
 
         // check if the msg.value is equal to the vTokenCost * _amount
         if (msg.value != vTokenCost * _amount / 1e18) revert PayableInsufficient();
-        (bool success,) = paymentReceiver.call{ value: msg.value }("");
+        (bool success,) = paymentReceiver.call{value: msg.value}("");
         if (!success) revert TransferToPaymentReceiverFailed();
 
         claimed[leaf] = true;
@@ -116,8 +119,11 @@ contract TokenVestingMerklePurchasable is TokenVesting {
         bool _revokable,
         uint256 _amount
     ) public view returns (bool) {
-        bytes32 leaf =
-            keccak256(bytes.concat(keccak256(abi.encode(_beneficiary, _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount))));
+        bytes32 leaf = keccak256(
+            bytes.concat(
+                keccak256(abi.encode(_beneficiary, _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount))
+            )
+        );
         return claimed[leaf];
     }
 
