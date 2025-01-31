@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.23;
 
-import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import { MultiTokenVesting } from "./MultiTokenVesting.sol";
-import { TokenVestingMerklePurchasable } from "../TokenVestingMerklePurchasable.sol";
-import { MerkleProofLib } from "@solady/utils/MerkleProofLib.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {MultiTokenVesting} from "./MultiTokenVesting.sol";
+import {TokenVestingMerklePurchasable} from "../TokenVestingMerklePurchasable.sol";
+import {MerkleProofLib} from "@solady/utils/MerkleProofLib.sol";
 
 /// @title MultiTokenVestingMerklePurchasable - Extension of TokenVestingMerklePurchasable contract to
 /// using merkle tree for vesting schedule creation across several contracts
@@ -82,14 +82,19 @@ contract MultiTokenVestingMerklePurchasable is MultiTokenVesting {
         uint256 _amount
     ) public payable whenNotPaused nonReentrant {
         // check if vesting schedule has been already claimed
-        bytes32 leaf =
-            keccak256(bytes.concat(keccak256(abi.encode(_msgSender(), _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount))));
+        bytes32 leaf = keccak256(
+            bytes.concat(
+                keccak256(abi.encode(_msgSender(), _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount))
+            )
+        );
         if (!MerkleProofLib.verify(_proof, merkleRoot, leaf)) revert InvalidProof();
-        if (scheduleClaimed(_msgSender(), _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount)) revert AlreadyClaimed();
+        if (scheduleClaimed(_msgSender(), _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount)) {
+            revert AlreadyClaimed();
+        }
 
         // check if the msg.value is equal to the vTokenCost * _amount
         if (msg.value != vTokenCost * _amount / 1e18) revert PayableInsufficient();
-        (bool success,) = paymentReceiver.call{ value: msg.value }("");
+        (bool success,) = paymentReceiver.call{value: msg.value}("");
         if (!success) revert TransferToPaymentReceiverFailed();
 
         claimed[leaf] = true;
@@ -116,8 +121,11 @@ contract MultiTokenVestingMerklePurchasable is MultiTokenVesting {
         bool _revokable,
         uint256 _amount
     ) public view returns (bool) {
-        bytes32 leaf =
-            keccak256(bytes.concat(keccak256(abi.encode(_beneficiary, _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount))));
+        bytes32 leaf = keccak256(
+            bytes.concat(
+                keccak256(abi.encode(_beneficiary, _start, _cliff, _duration, _slicePeriodSeconds, _revokable, _amount))
+            )
+        );
         if (claimed[leaf]) return true;
 
         for (uint256 i = 0; i < externalVestingContracts.length; i++) {
