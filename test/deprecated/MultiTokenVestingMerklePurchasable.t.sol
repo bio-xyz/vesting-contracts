@@ -63,7 +63,7 @@ contract TokenVestingV2MerklePurchasableTest is Test {
         vm.startPrank(deployer);
         token = new Token("Test Token", "TT", 18, tokenSupply);
 
-        // Iniate TokenVestingMerkle with the merkle root from the example MerkleTree `samples/merkleTree.json`
+        // Initiate TokenVestingMerkle with the merkle root from the example MerkleTree `samples/merkleTree.json`
         tokenVesting = new TokenVestingMerklePurchasable(
             IERC20Metadata(token), "Virtual Test Token", "vTT", paymentReceiver, vestingCreator, vTokenCost, merkleRoot1
         );

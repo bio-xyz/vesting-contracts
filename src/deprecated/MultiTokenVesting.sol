@@ -5,7 +5,7 @@ pragma solidity 0.8.23;
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {TokenVesting} from "../TokenVesting.sol";
 
-/// @title MultiTokenVesting - Wrapper extention of TokenVesting contract to allow the querying of vesting token balance from multiple vesting contracts
+/// @title MultiTokenVesting - Wrapper extension of TokenVesting contract to allow the querying of vesting token balance from multiple vesting contracts
 
 contract MultiTokenVesting is TokenVesting {
     /**
