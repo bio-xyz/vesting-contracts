@@ -48,7 +48,7 @@ contract TokenVestingMerkleTest is Test {
         vm.startPrank(deployer);
         token = new Token("Test Token", "TT", 18, 1000000 ether);
 
-        // Iniate TokenVestingMerkle with the merkle root from the example MerkleTree `samples/merkleTree.json`
+        // Initiate TokenVestingMerkle with the merkle root from the example MerkleTree `samples/merkleTree.json`
         tokenVesting = new TokenVestingMerkle(IERC20Metadata(token), "Virtual Test Token", "vTT", deployer, merkleRoot1);
 
         token.transfer(address(tokenVesting), 1000000 ether);
